@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Module extends Model
 {
     protected $fillable = [
+        'module_code',
         'module_name',
         'icon',
         'status',

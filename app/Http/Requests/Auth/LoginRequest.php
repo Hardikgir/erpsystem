@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'], // Changed from 'email' to accept username or email
             'password' => ['required', 'string'],
         ];
     }
@@ -41,12 +41,52 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $loginInput = $this->input('email');
+        $password = $this->input('password');
+        
+        // Determine if input is email or username
+        $isEmail = filter_var($loginInput, FILTER_VALIDATE_EMAIL);
+        
+        // Try to find user
+        $user = null;
+        $loginEmail = null;
+        
+        if ($isEmail) {
+            // If it's an email, search directly
+            $user = \App\Models\User::where('email', $loginInput)->first();
+            $loginEmail = $loginInput;
+        } else {
+            // If it's a username, try to find by username pattern (username@erp.com)
+            $loginEmail = $loginInput . '@erp.com';
+            $user = \App\Models\User::where('email', $loginEmail)->first();
+        }
+        
+        // If user found, check password and status
+        if ($user) {
+            // Check if user is active first
+            if (!$user->status) {
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages([
+                    'email' => 'Your account has been deactivated. Please contact administrator.',
+                ]);
+            }
+            
+            // Use Auth::attempt with the correct email
+            if (! Auth::attempt(['email' => $loginEmail, 'password' => $password], $this->boolean('remember'))) {
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.failed'),
+                ]);
+            }
+        } else {
+            // Try standard email authentication as fallback
+            if (! Auth::attempt(['email' => $loginInput, 'password' => $password], $this->boolean('remember'))) {
+                RateLimiter::hit($this->throttleKey());
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
+                throw ValidationException::withMessages([
+                    'email' => trans('auth.failed'),
+                ]);
+            }
         }
 
         RateLimiter::clear($this->throttleKey());

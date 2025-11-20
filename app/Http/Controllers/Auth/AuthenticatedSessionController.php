@@ -28,7 +28,24 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Role-based redirect after login
+        $user = Auth::user();
+        
+        // Check if user is inactive
+        if (!$user->status) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Your account has been deactivated. Please contact administrator.']);
+        }
+
+        // Redirect based on role
+        if ($user->isSuperAdmin()) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        } elseif ($user->role && strtolower($user->role->role_name) === 'university admin') {
+            return redirect()->intended(route('university.admin.dashboard', absolute: false));
+        } else {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
     }
 
     /**
