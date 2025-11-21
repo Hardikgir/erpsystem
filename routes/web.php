@@ -106,12 +106,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         
         // University Master - Super Admin only
         Route::get('/university-master', [UniversityMasterController::class, 'index'])->name('university.master');
+        Route::get('/university-master/create', [UniversityMasterController::class, 'create'])->name('university.master.create');
         Route::post('/university-master/store', [UniversityMasterController::class, 'store'])->name('university.master.store');
-        Route::get('/university-master/view/{id}', [UniversityMasterController::class, 'show'])->name('university.master.show');
-        Route::get('/university-master/edit/{id}', [UniversityMasterController::class, 'edit'])->name('university.master.edit');
-        Route::post('/university-master/update/{id}', [UniversityMasterController::class, 'update'])->name('university.master.update');
-        Route::delete('/university-master/delete/{id}', [UniversityMasterController::class, 'destroy'])->name('university.master.destroy');
-        Route::post('/university-master/status/{id}', [UniversityMasterController::class, 'toggleStatus'])->name('university.master.status');
+        Route::get('/university-master/{id}/view', [UniversityMasterController::class, 'view'])->name('university.master.view');
+        Route::get('/university-master/{id}/edit', [UniversityMasterController::class, 'edit'])->name('university.master.edit');
+        Route::post('/university-master/{id}/update', [UniversityMasterController::class, 'update'])->name('university.master.update');
+        Route::delete('/university-master/{id}/delete', [UniversityMasterController::class, 'destroy'])->name('university.master.destroy');
     });
 });
 

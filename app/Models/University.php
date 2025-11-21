@@ -12,27 +12,10 @@ class University extends Model
     protected $fillable = [
         'university_code',
         'university_name',
-        'admin_username',
-        'admin_user_id',
-        'admin_password_display',
-        'url',
-        'password',
         'status',
     ];
 
-    protected $hidden = [
-        'password',
-    ];
-
     protected $casts = [
-        'status' => 'string',
+        'status' => 'boolean',
     ];
-
-    /**
-     * Get the admin user associated with the university
-     */
-    public function adminUser()
-    {
-        return $this->belongsTo(User::class, 'admin_user_id');
-    }
 }

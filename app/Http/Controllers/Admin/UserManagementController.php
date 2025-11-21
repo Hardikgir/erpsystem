@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\University;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -28,7 +29,8 @@ class UserManagementController extends Controller
     public function create(): View
     {
         $roles = Role::all();
-        return view('admin.users.create', compact('roles'));
+        $universities = University::where('status', true)->orderBy('university_name')->get();
+        return view('admin.users.create', compact('roles', 'universities'));
     }
 
     /**
@@ -36,15 +38,26 @@ class UserManagementController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        // Get the role to check if it's university_admin
+        $role = Role::find($request->role_id);
+        $roleName = $role ? strtolower(str_replace([' ', '_'], '', $role->role_name)) : '';
+        $isUniversityAdmin = $roleName === 'universityadmin';
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive',
+            'university_id' => $isUniversityAdmin ? 'required|exists:universities,id' : 'nullable|exists:universities,id',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+
+        // Set university_id based on role
+        if (!$isUniversityAdmin) {
+            $validated['university_id'] = null;
+        }
 
         User::create($validated);
 
@@ -67,7 +80,8 @@ class UserManagementController extends Controller
     public function edit(User $user): View
     {
         $roles = Role::all();
-        return view('admin.users.edit', compact('user', 'roles'));
+        $universities = University::where('status', true)->orderBy('university_name')->get();
+        return view('admin.users.edit', compact('user', 'roles', 'universities'));
     }
 
     /**
@@ -75,18 +89,29 @@ class UserManagementController extends Controller
      */
     public function update(Request $request, User $user): RedirectResponse
     {
+        // Get the role to check if it's university_admin
+        $role = Role::find($request->role_id);
+        $roleName = $role ? strtolower(str_replace([' ', '_'], '', $role->role_name)) : '';
+        $isUniversityAdmin = $roleName === 'universityadmin';
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
             'status' => 'required|in:active,inactive',
+            'university_id' => $isUniversityAdmin ? 'required|exists:universities,id' : 'nullable|exists:universities,id',
         ]);
 
         if (empty($validated['password'])) {
             unset($validated['password']);
         } else {
             $validated['password'] = Hash::make($validated['password']);
+        }
+
+        // Set university_id based on role
+        if (!$isUniversityAdmin) {
+            $validated['university_id'] = null;
         }
 
         $user->update($validated);
