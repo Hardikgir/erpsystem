@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\UniversityRole;
-use App\Models\University;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -17,9 +16,7 @@ class UniversityRoleMasterController extends Controller
      */
     private function getUniversityId()
     {
-        $user = Auth::user();
-        $university = University::where('admin_user_id', $user->id)->first();
-        return $university ? $university->id : null;
+        return Auth::user()->university_id;
     }
 
     /**

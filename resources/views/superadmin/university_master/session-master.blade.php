@@ -1,10 +1,10 @@
-@extends('university_admin.layouts.app')
+@extends('admin.layouts.app')
 
 @section('title', 'Session Master')
 @section('page-title', 'Session Master')
 
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('university.admin.dashboard') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
     <li class="breadcrumb-item active">Session Master</li>
 @endsection
 
@@ -18,13 +18,30 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <p><strong>User: {{ auth()->user()->name }}</strong></p>
+                        <p><strong>User: Super Admin</strong></p>
                     </div>
                 </div>
-                <form action="{{ isset($session) ? route('university.admin.session.update', $session->id) : route('university.admin.session.store') }}" method="POST">
+                <form action="{{ isset($session) ? route('superadmin.session.update', $session->id) : route('superadmin.session.store') }}" method="POST">
                     @csrf
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="university_id">University<span class="text-danger">*</span></label>
+                                <select class="form-control @error('university_id') is-invalid @enderror" 
+                                        id="university_id" name="university_id" required>
+                                    <option value="">Select University</option>
+                                    @foreach($universities ?? [] as $university)
+                                        <option value="{{ $university->id }}" {{ old('university_id', isset($session) ? $session->university_id : '') == $university->id ? 'selected' : '' }}>
+                                            {{ $university->university_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('university_id')
+                                    <span class="invalid-feedback"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label for="session_type">Session Type<span class="text-danger">*</span></label>
                                 <select class="form-control @error('session_type') is-invalid @enderror" 
@@ -38,7 +55,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label for="year">Year<span class="text-danger">*</span></label>
                                 <input type="number" class="form-control @error('year') is-invalid @enderror" 
@@ -50,7 +67,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary btn-block" style="background-color: #1F8BFF;">SAVE</button>
@@ -60,7 +77,7 @@
                     @if(isset($session))
                         <div class="row">
                             <div class="col-md-12">
-                                <a href="{{ route('university.admin.session.master') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                                <a href="{{ route('superadmin.session.master') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             </div>
                         </div>
                     @endif
@@ -74,6 +91,7 @@
                     <thead>
                         <tr>
                             <th>Sr. no.</th>
+                            <th>University</th>
                             <th>Session Label</th>
                             <th>Edit/Update</th>
                         </tr>
@@ -82,13 +100,14 @@
                         @forelse($sessions as $index => $session)
                             <tr>
                                 <td>{{ $index + 1 }}</td>
+                                <td>{{ $session->university->university_name ?? 'N/A' }}</td>
                                 <td>{{ $session->session_label }}</td>
                                 <td>
-                                    <a href="{{ route('university.admin.session.edit', $session->id) }}" class="btn btn-link" style="color: #1F8BFF; text-decoration: underline;">Update</a>
+                                    <a href="{{ route('superadmin.session.edit', $session->id) }}" class="btn btn-link" style="color: #1F8BFF; text-decoration: underline;">Update</a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="3" class="text-center">No sessions found.</td></tr>
+                            <tr><td colspan="4" class="text-center">No sessions found.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

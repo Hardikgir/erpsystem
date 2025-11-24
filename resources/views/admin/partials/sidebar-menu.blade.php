@@ -71,6 +71,43 @@
             <p>University Master</p>
         </a>
     </li>
+
+    <li class="nav-header">UNIVERSITY MASTER DATA</li>
+
+    <li class="nav-item">
+        <a href="{{ route('superadmin.program.master') }}" class="nav-link {{ request()->routeIs('superadmin.program.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-book"></i>
+            <p>Program Master</p>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{{ route('superadmin.course.master') }}" class="nav-link {{ request()->routeIs('superadmin.course.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-layer-group"></i>
+            <p>Course Master</p>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{{ route('superadmin.college.master') }}" class="nav-link {{ request()->routeIs('superadmin.college.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-school"></i>
+            <p>College Master</p>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{{ route('superadmin.universityrole.master') }}" class="nav-link {{ request()->routeIs('superadmin.universityrole.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-user-shield"></i>
+            <p>University Role Master</p>
+        </a>
+    </li>
+
+    <li class="nav-item">
+        <a href="{{ route('superadmin.session.master') }}" class="nav-link {{ request()->routeIs('superadmin.session.*') ? 'active' : '' }}">
+            <i class="nav-icon fas fa-calendar"></i>
+            <p>Session Master</p>
+        </a>
+    </li>
 @elseif($user->role && (strtolower($user->role->role_name) === 'university admin'))
     <!-- University Admin Menu -->
     <li class="nav-item">

@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->unsignedBigInteger('session_id')->nullable(); // Will be set after sessions table is created
                 $table->string('course_code');
                 $table->string('course_name');
-                $table->enum('course_type', ['Semester', 'Yearly']);
+                $table->enum('course_type', ['Semester', 'Year']);
                 $table->integer('course_duration');
                 $table->timestamps();
                 

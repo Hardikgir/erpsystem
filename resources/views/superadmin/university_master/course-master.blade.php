@@ -1,10 +1,10 @@
-@extends('university_admin.layouts.app')
+@extends('admin.layouts.app')
 
 @section('title', 'Course Master')
 @section('page-title', 'Course Master')
 
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('university.admin.dashboard') }}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
     <li class="breadcrumb-item active">Course Master</li>
 @endsection
 
@@ -18,13 +18,13 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <p><strong>User: {{ auth()->user()->name }}</strong></p>
+                        <p><strong>User: Super Admin</strong></p>
                     </div>
                 </div>
-                <form action="{{ isset($course) ? route('university.admin.course.update', $course->id) : route('university.admin.course.store') }}" method="POST">
+                <form action="{{ isset($course) ? route('superadmin.course.update', $course->id) : route('superadmin.course.store') }}" method="POST">
                     @csrf
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label for="course_code">Course Code<span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('course_code') is-invalid @enderror" 
@@ -36,7 +36,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="form-group">
                                 <label for="course_name">Course Name<span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('course_name') is-invalid @enderror" 
@@ -91,9 +91,9 @@
                                 <select class="form-control @error('program_id') is-invalid @enderror" 
                                         id="program_id" name="program_id" required>
                                     <option value="">Select Program</option>
-                                    @foreach($programs as $program)
+                                    @foreach($programs ?? [] as $program)
                                         <option value="{{ $program->id }}" {{ old('program_id', isset($course) ? $course->program_id : '') == $program->id ? 'selected' : '' }}>
-                                            {{ $program->program_name }}
+                                            {{ $program->program_name }} ({{ $program->university->university_name ?? 'N/A' }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -108,9 +108,9 @@
                                 <select class="form-control @error('session_id') is-invalid @enderror" 
                                         id="session_id" name="session_id" required>
                                     <option value="">Select Session</option>
-                                    @foreach($sessions as $session)
+                                    @foreach($sessions ?? [] as $session)
                                         <option value="{{ $session->id }}" {{ old('session_id', isset($course) ? $course->session_id : '') == $session->id ? 'selected' : '' }}>
-                                            {{ $session->session_label }}
+                                            {{ $session->session_label }} ({{ $session->university->university_name ?? 'N/A' }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -123,7 +123,7 @@
                     @if(isset($course))
                         <div class="row">
                             <div class="col-md-12">
-                                <a href="{{ route('university.admin.course.master') }}" class="btn btn-secondary btn-sm">Cancel</a>
+                                <a href="{{ route('superadmin.course.master') }}" class="btn btn-secondary btn-sm">Cancel</a>
                             </div>
                         </div>
                     @endif
@@ -153,7 +153,7 @@
                                 <td>{{ $course->course_type }}</td>
                                 <td>{{ $course->course_duration }}</td>
                                 <td>
-                                    <a href="{{ route('university.admin.course.edit', $course->id) }}" class="btn btn-link" style="color: #1F8BFF; text-decoration: underline;">Update</a>
+                                    <a href="{{ route('superadmin.course.edit', $course->id) }}" class="btn btn-link" style="color: #1F8BFF; text-decoration: underline;">Update</a>
                                 </td>
                             </tr>
                         @empty

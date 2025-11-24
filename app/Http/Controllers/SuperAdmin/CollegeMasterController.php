@@ -1,35 +1,28 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SuperAdmin;
 
+use App\Http\Controllers\Controller;
 use App\Models\College;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CollegeMasterController extends Controller
 {
     /**
-     * Get the university ID for the logged-in admin
-     */
-    private function getUniversityId()
-    {
-        return Auth::user()->university_id;
-    }
-
-    /**
-     * Display the college master page
+     * Display the college master page (all colleges from all universities)
      */
     public function index(): View
     {
-        $universityId = $this->getUniversityId();
-        $colleges = College::where('university_id', $universityId)
+        $colleges = College::with('university')
             ->orderBy('id', 'desc')
             ->get();
         
-        return view('university_admin.college-master', compact('colleges'));
+        $universities = \App\Models\University::where('status', true)->orderBy('university_name')->get();
+        
+        return view('superadmin.university_master.college-master', compact('colleges', 'universities'));
     }
 
     /**
@@ -37,19 +30,12 @@ class CollegeMasterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $universityId = $this->getUniversityId();
-        
-        if (!$universityId) {
-            return redirect()->back()
-                ->withErrors(['error' => 'University not found.'])
-                ->withInput();
-        }
-
         $validator = Validator::make($request->all(), [
-            'college_code' => 'required|string|max:255|unique:colleges,college_code,NULL,id,university_id,' . $universityId,
+            'college_code' => 'required|string|max:255',
             'college_name' => 'required|string|max:255',
             'college_type' => 'required|in:Govt,Private',
             'establish_date' => 'required|date',
+            'university_id' => 'required|exists:universities,id',
         ]);
 
         if ($validator->fails()) {
@@ -58,15 +44,26 @@ class CollegeMasterController extends Controller
                 ->withInput();
         }
 
+        // Check uniqueness within university
+        $exists = College::where('university_id', $request->university_id)
+            ->where('college_code', strtoupper($request->college_code))
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withErrors(['college_code' => 'College Code already exists for this university.'])
+                ->withInput();
+        }
+
         College::create([
-            'university_id' => $universityId,
+            'university_id' => $request->university_id,
             'college_code' => strtoupper($request->college_code),
             'college_name' => $request->college_name,
             'college_type' => $request->college_type,
             'establish_date' => $request->establish_date,
         ]);
 
-        return redirect()->route('university.admin.college.master')
+        return redirect()->route('superadmin.college.master')
             ->with('success', 'College created successfully.');
     }
 
@@ -75,14 +72,14 @@ class CollegeMasterController extends Controller
      */
     public function edit($id): View
     {
-        $universityId = $this->getUniversityId();
-        $college = College::where('university_id', $universityId)
-            ->findOrFail($id);
-        $colleges = College::where('university_id', $universityId)
+        $college = College::with('university')->findOrFail($id);
+        $colleges = College::with('university')
             ->orderBy('id', 'desc')
             ->get();
         
-        return view('university_admin.college-master', compact('colleges', 'college'));
+        $universities = \App\Models\University::where('status', true)->orderBy('university_name')->get();
+        
+        return view('superadmin.university_master.college-master', compact('colleges', 'college', 'universities'));
     }
 
     /**
@@ -90,15 +87,14 @@ class CollegeMasterController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        $universityId = $this->getUniversityId();
-        $college = College::where('university_id', $universityId)
-            ->findOrFail($id);
+        $college = College::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'college_code' => 'required|string|max:255|unique:colleges,college_code,' . $id . ',id,university_id,' . $universityId,
+            'college_code' => 'required|string|max:255',
             'college_name' => 'required|string|max:255',
             'college_type' => 'required|in:Govt,Private',
             'establish_date' => 'required|date',
+            'university_id' => 'required|exists:universities,id',
         ]);
 
         if ($validator->fails()) {
@@ -107,14 +103,28 @@ class CollegeMasterController extends Controller
                 ->withInput();
         }
 
+        // Check uniqueness within university (excluding current)
+        $exists = College::where('university_id', $request->university_id)
+            ->where('college_code', strtoupper($request->college_code))
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withErrors(['college_code' => 'College Code already exists for this university.'])
+                ->withInput();
+        }
+
         $college->update([
+            'university_id' => $request->university_id,
             'college_code' => strtoupper($request->college_code),
             'college_name' => $request->college_name,
             'college_type' => $request->college_type,
             'establish_date' => $request->establish_date,
         ]);
 
-        return redirect()->route('university.admin.college.master')
+        return redirect()->route('superadmin.college.master')
             ->with('success', 'College updated successfully.');
     }
 }
+

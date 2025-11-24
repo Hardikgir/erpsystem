@@ -1,41 +1,32 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\SuperAdmin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Course;
 use App\Models\Program;
 use App\Models\Session;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CourseMasterController extends Controller
 {
     /**
-     * Get the university ID for the logged-in admin
-     */
-    private function getUniversityId()
-    {
-        return Auth::user()->university_id;
-    }
-
-    /**
-     * Display the course master page
+     * Display the course master page (all courses from all universities)
      */
     public function index(): View
     {
-        $universityId = $this->getUniversityId();
-        $courses = Course::where('university_id', $universityId)
-            ->with(['program', 'session'])
+        $courses = Course::with(['program', 'session', 'university'])
             ->orderBy('id', 'desc')
             ->get();
         
-        $programs = Program::where('university_id', $universityId)->get();
-        $sessions = Session::where('university_id', $universityId)->get();
+        $programs = Program::with('university')->orderBy('program_name')->get();
+        $sessions = Session::with('university')->orderBy('year', 'desc')->orderBy('session_type')->get();
+        $universities = \App\Models\University::where('status', true)->orderBy('university_name')->get();
         
-        return view('university_admin.course-master', compact('courses', 'programs', 'sessions'));
+        return view('superadmin.university_master.course-master', compact('courses', 'programs', 'sessions', 'universities'));
     }
 
     /**
@@ -43,26 +34,34 @@ class CourseMasterController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $universityId = $this->getUniversityId();
-        
-        if (!$universityId) {
-            return redirect()->back()
-                ->withErrors(['error' => 'University not found.'])
-                ->withInput();
-        }
-
         $validator = Validator::make($request->all(), [
-            'course_code' => 'required|string|max:255|unique:courses,course_code,NULL,id,university_id,' . $universityId,
+            'course_code' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
             'course_type' => 'required|in:Semester,Year',
             'course_duration' => 'required|integer|min:1|max:10',
             'program_id' => 'required|exists:programs,id',
             'session_id' => 'required|exists:university_sessions,id',
+            'university_id' => 'required|exists:universities,id',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
+                ->withInput();
+        }
+
+        // Get university_id from program
+        $program = Program::findOrFail($request->program_id);
+        $universityId = $program->university_id;
+
+        // Check uniqueness within university
+        $exists = Course::where('university_id', $universityId)
+            ->where('course_code', strtoupper($request->course_code))
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withErrors(['course_code' => 'Course Code already exists for this university.'])
                 ->withInput();
         }
 
@@ -76,7 +75,7 @@ class CourseMasterController extends Controller
             'course_duration' => $request->course_duration,
         ]);
 
-        return redirect()->route('university.admin.course.master')
+        return redirect()->route('superadmin.course.master')
             ->with('success', 'Course created successfully.');
     }
 
@@ -85,18 +84,16 @@ class CourseMasterController extends Controller
      */
     public function edit($id): View
     {
-        $universityId = $this->getUniversityId();
-        $course = Course::where('university_id', $universityId)
-            ->findOrFail($id);
-        $courses = Course::where('university_id', $universityId)
-            ->with(['program', 'session'])
+        $course = Course::with(['program', 'session', 'university'])->findOrFail($id);
+        $courses = Course::with(['program', 'session', 'university'])
             ->orderBy('id', 'desc')
             ->get();
         
-        $programs = Program::where('university_id', $universityId)->get();
-        $sessions = Session::where('university_id', $universityId)->get();
+        $programs = Program::with('university')->orderBy('program_name')->get();
+        $sessions = Session::with('university')->orderBy('year', 'desc')->orderBy('session_type')->get();
+        $universities = \App\Models\University::where('status', true)->orderBy('university_name')->get();
         
-        return view('university_admin.course-master', compact('courses', 'programs', 'sessions', 'course'));
+        return view('superadmin.university_master.course-master', compact('courses', 'programs', 'sessions', 'course', 'universities'));
     }
 
     /**
@@ -104,12 +101,10 @@ class CourseMasterController extends Controller
      */
     public function update(Request $request, $id): RedirectResponse
     {
-        $universityId = $this->getUniversityId();
-        $course = Course::where('university_id', $universityId)
-            ->findOrFail($id);
+        $course = Course::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'course_code' => 'required|string|max:255|unique:courses,course_code,' . $id . ',id,university_id,' . $universityId,
+            'course_code' => 'required|string|max:255',
             'course_name' => 'required|string|max:255',
             'course_type' => 'required|in:Semester,Year',
             'course_duration' => 'required|integer|min:1|max:10',
@@ -123,7 +118,24 @@ class CourseMasterController extends Controller
                 ->withInput();
         }
 
+        // Get university_id from program
+        $program = Program::findOrFail($request->program_id);
+        $universityId = $program->university_id;
+
+        // Check uniqueness within university (excluding current)
+        $exists = Course::where('university_id', $universityId)
+            ->where('course_code', strtoupper($request->course_code))
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withErrors(['course_code' => 'Course Code already exists for this university.'])
+                ->withInput();
+        }
+
         $course->update([
+            'university_id' => $universityId,
             'program_id' => $request->program_id,
             'session_id' => $request->session_id,
             'course_code' => strtoupper($request->course_code),
@@ -132,7 +144,8 @@ class CourseMasterController extends Controller
             'course_duration' => $request->course_duration,
         ]);
 
-        return redirect()->route('university.admin.course.master')
+        return redirect()->route('superadmin.course.master')
             ->with('success', 'Course updated successfully.');
     }
 }
+

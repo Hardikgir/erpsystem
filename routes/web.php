@@ -15,6 +15,11 @@ use App\Http\Controllers\CourseMasterController;
 use App\Http\Controllers\CollegeMasterController;
 use App\Http\Controllers\UniversityRoleMasterController;
 use App\Http\Controllers\SessionMasterController;
+use App\Http\Controllers\SuperAdmin\ProgramMasterController as SuperAdminProgramMasterController;
+use App\Http\Controllers\SuperAdmin\CourseMasterController as SuperAdminCourseMasterController;
+use App\Http\Controllers\SuperAdmin\CollegeMasterController as SuperAdminCollegeMasterController;
+use App\Http\Controllers\SuperAdmin\UniversityRoleMasterController as SuperAdminUniversityRoleMasterController;
+use App\Http\Controllers\SuperAdmin\SessionMasterController as SuperAdminSessionMasterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudentExamController;
 use Illuminate\Support\Facades\Route;
@@ -112,6 +117,37 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/university-master/{id}/edit', [UniversityMasterController::class, 'edit'])->name('university.master.edit');
         Route::post('/university-master/{id}/update', [UniversityMasterController::class, 'update'])->name('university.master.update');
         Route::delete('/university-master/{id}/delete', [UniversityMasterController::class, 'destroy'])->name('university.master.destroy');
+        
+        // University Master Data - Super Admin only
+        // Program Master
+        Route::get('/superadmin/program-master', [SuperAdminProgramMasterController::class, 'index'])->name('superadmin.program.master');
+        Route::post('/superadmin/program-master/store', [SuperAdminProgramMasterController::class, 'store'])->name('superadmin.program.store');
+        Route::get('/superadmin/program-master/edit/{id}', [SuperAdminProgramMasterController::class, 'edit'])->name('superadmin.program.edit');
+        Route::post('/superadmin/program-master/update/{id}', [SuperAdminProgramMasterController::class, 'update'])->name('superadmin.program.update');
+        
+        // Course Master
+        Route::get('/superadmin/course-master', [SuperAdminCourseMasterController::class, 'index'])->name('superadmin.course.master');
+        Route::post('/superadmin/course-master/store', [SuperAdminCourseMasterController::class, 'store'])->name('superadmin.course.store');
+        Route::get('/superadmin/course-master/edit/{id}', [SuperAdminCourseMasterController::class, 'edit'])->name('superadmin.course.edit');
+        Route::post('/superadmin/course-master/update/{id}', [SuperAdminCourseMasterController::class, 'update'])->name('superadmin.course.update');
+        
+        // College Master
+        Route::get('/superadmin/college-master', [SuperAdminCollegeMasterController::class, 'index'])->name('superadmin.college.master');
+        Route::post('/superadmin/college-master/store', [SuperAdminCollegeMasterController::class, 'store'])->name('superadmin.college.store');
+        Route::get('/superadmin/college-master/edit/{id}', [SuperAdminCollegeMasterController::class, 'edit'])->name('superadmin.college.edit');
+        Route::post('/superadmin/college-master/update/{id}', [SuperAdminCollegeMasterController::class, 'update'])->name('superadmin.college.update');
+        
+        // University Role Master
+        Route::get('/superadmin/universityrole-master', [SuperAdminUniversityRoleMasterController::class, 'index'])->name('superadmin.universityrole.master');
+        Route::post('/superadmin/universityrole-master/store', [SuperAdminUniversityRoleMasterController::class, 'store'])->name('superadmin.universityrole.store');
+        Route::get('/superadmin/universityrole-master/edit/{id}', [SuperAdminUniversityRoleMasterController::class, 'edit'])->name('superadmin.universityrole.edit');
+        Route::post('/superadmin/universityrole-master/update/{id}', [SuperAdminUniversityRoleMasterController::class, 'update'])->name('superadmin.universityrole.update');
+        
+        // Session Master
+        Route::get('/superadmin/session-master', [SuperAdminSessionMasterController::class, 'index'])->name('superadmin.session.master');
+        Route::post('/superadmin/session-master/store', [SuperAdminSessionMasterController::class, 'store'])->name('superadmin.session.store');
+        Route::get('/superadmin/session-master/edit/{id}', [SuperAdminSessionMasterController::class, 'edit'])->name('superadmin.session.edit');
+        Route::post('/superadmin/session-master/update/{id}', [SuperAdminSessionMasterController::class, 'update'])->name('superadmin.session.update');
     });
 });
 
