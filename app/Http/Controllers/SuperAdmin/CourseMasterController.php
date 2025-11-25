@@ -49,7 +49,8 @@ class CourseMasterController extends Controller
                 ->withInput();
         }
 
-        // Get university_id from program
+        //new course code
+        // // Get university_id from program
         $program = Program::findOrFail($request->program_id);
         $universityId = $program->university_id;
 
