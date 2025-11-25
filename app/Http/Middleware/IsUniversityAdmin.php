@@ -22,7 +22,7 @@ class IsUniversityAdmin
         $user = auth()->user();
         
         // Check if user is University Admin
-        if (!$user->role || strtolower($user->role->role_name) !== 'university admin') {
+        if (!$user->isUniversityAdmin()) {
             abort(403, 'Unauthorized access. University Admin privileges required.');
         }
 

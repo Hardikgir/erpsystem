@@ -41,7 +41,6 @@ class CourseMasterController extends Controller
             'course_duration' => 'required|integer|min:1|max:10',
             'program_id' => 'required|exists:programs,id',
             'session_id' => 'required|exists:university_sessions,id',
-            'university_id' => 'required|exists:universities,id',
         ]);
 
         if ($validator->fails()) {
@@ -148,4 +147,5 @@ class CourseMasterController extends Controller
             ->with('success', 'Course updated successfully.');
     }
 }
+
 

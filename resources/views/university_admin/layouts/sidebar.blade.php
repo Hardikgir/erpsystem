@@ -1,5 +1,6 @@
 @php
     $user = auth()->user();
+    $modules = $user->getAccessibleModules();
 @endphp
 
 <li class="nav-item">
@@ -9,40 +10,65 @@
     </a>
 </li>
 
-<li class="nav-header">MASTER DATA</li>
+@if($modules && $modules->count() > 0)
+    <li class="nav-header">MY MODULES</li>
+    
+    @foreach($modules as $module)
+        @php
+            $subModules = $module->subModules;
+        @endphp
 
-<li class="nav-item">
-    <a href="{{ route('university.admin.program.master') }}" class="nav-link {{ request()->routeIs('university.admin.program.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-graduation-cap"></i>
-        <p>Program Master</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('university.admin.course.master') }}" class="nav-link {{ request()->routeIs('university.admin.course.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-book"></i>
-        <p>Course Master</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('university.admin.college.master') }}" class="nav-link {{ request()->routeIs('university.admin.college.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-building"></i>
-        <p>College Master</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('university.admin.role.master') }}" class="nav-link {{ request()->routeIs('university.admin.role.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-user-tag"></i>
-        <p>Role Master</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('university.admin.session.master') }}" class="nav-link {{ request()->routeIs('university.admin.session.*') ? 'active' : '' }}">
-        <i class="nav-icon fas fa-calendar-alt"></i>
-        <p>Session Master</p>
-    </a>
-</li>
+        @if($subModules && $subModules->count() > 0)
+            @php
+                $validSubModules = $subModules->filter(function($subModule) {
+                    return $subModule->hasValidRoute();
+                });
+            @endphp
+            
+            @if($subModules->count() > 0)
+                <li class="nav-item {{ $subModules->count() > 1 ? 'has-treeview' : '' }}">
+                    @if($subModules->count() == 1)
+                        @php $singleSubModule = $subModules->first(); @endphp
+                        @if($singleSubModule->hasValidRoute())
+                            <a href="{{ route($singleSubModule->route) }}" class="nav-link {{ request()->routeIs($singleSubModule->route) ? 'active' : '' }}">
+                                <i class="nav-icon {{ $module->icon ?? 'fas fa-circle' }}"></i>
+                                <p>{{ $module->module_name }}</p>
+                            </a>
+                        @else
+                            <a href="#" class="nav-link" onclick="return false;" title="Route not configured: {{ $singleSubModule->route }}">
+                                <i class="nav-icon {{ $module->icon ?? 'fas fa-circle' }}"></i>
+                                <p>{{ $module->module_name }}</p>
+                            </a>
+                        @endif
+                    @else
+                        <a href="#" class="nav-link">
+                            <i class="nav-icon {{ $module->icon ?? 'fas fa-circle' }}"></i>
+                            <p>
+                                {{ $module->module_name }}
+                                <i class="fas fa-angle-left right"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            @foreach($subModules as $subModule)
+                                <li class="nav-item">
+                                    @if($subModule->hasValidRoute())
+                                        <a href="{{ route($subModule->route) }}" class="nav-link {{ request()->routeIs($subModule->route) ? 'active' : '' }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>{{ $subModule->sub_module_name }}</p>
+                                        </a>
+                                    @else
+                                        <a href="#" class="nav-link text-muted" onclick="return false;" title="Route not configured: {{ $subModule->route }}">
+                                            <i class="far fa-circle nav-icon"></i>
+                                            <p>{{ $subModule->sub_module_name }} <small class="text-danger">(No Route)</small></p>
+                                        </a>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </li>
+            @endif
+        @endif
+    @endforeach
+@endif
 

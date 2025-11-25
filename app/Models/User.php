@@ -65,6 +65,20 @@ class User extends Authenticatable
         return $this->role && $this->role->role_name === 'Super Admin';
     }
 
+    public function isUniversityAdmin(): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+        
+        $roleName = strtolower(trim($this->role->role_name));
+        return in_array($roleName, [
+            'university admin',
+            'university_admin',
+            'universityadmin'
+        ]);
+    }
+
     public function hasPermission(string $route, string $permission = 'can_view'): bool
     {
         if ($this->isSuperAdmin()) {

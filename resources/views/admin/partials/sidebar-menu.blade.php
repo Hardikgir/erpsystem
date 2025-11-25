@@ -108,7 +108,7 @@
             <p>Session Master</p>
         </a>
     </li>
-@elseif($user->role && (strtolower($user->role->role_name) === 'university admin'))
+@elseif($user->isUniversityAdmin())
     <!-- University Admin Menu -->
     <li class="nav-item">
         <a href="{{ route('university.admin.dashboard') }}" class="nav-link {{ request()->routeIs('university.admin.*') ? 'active' : '' }}">

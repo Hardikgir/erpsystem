@@ -15,6 +15,10 @@ use App\Http\Controllers\CourseMasterController;
 use App\Http\Controllers\CollegeMasterController;
 use App\Http\Controllers\UniversityRoleMasterController;
 use App\Http\Controllers\SessionMasterController;
+use App\Http\Controllers\FeeElementController;
+use App\Http\Controllers\FeePackageController;
+use App\Http\Controllers\FeePlanController;
+use App\Http\Controllers\BankController;
 use App\Http\Controllers\SuperAdmin\ProgramMasterController as SuperAdminProgramMasterController;
 use App\Http\Controllers\SuperAdmin\CourseMasterController as SuperAdminCourseMasterController;
 use App\Http\Controllers\SuperAdmin\CollegeMasterController as SuperAdminCollegeMasterController;
@@ -72,6 +76,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/session-master/store', [SessionMasterController::class, 'store'])->name('session.store');
         Route::get('/session-master/edit/{id}', [SessionMasterController::class, 'edit'])->name('session.edit');
         Route::post('/session-master/update/{id}', [SessionMasterController::class, 'update'])->name('session.update');
+        
+        // Fee Element
+        Route::get('/fee-element', [FeeElementController::class, 'index'])->name('fee.element');
+        Route::post('/fee-element/store', [FeeElementController::class, 'store'])->name('fee.element.store');
+        Route::get('/fee-element/edit/{id}', [FeeElementController::class, 'edit'])->name('fee.element.edit');
+        Route::post('/fee-element/update/{id}', [FeeElementController::class, 'update'])->name('fee.element.update');
+        
+        // Fee Package
+        Route::get('/fee-package', [FeePackageController::class, 'index'])->name('fee.package');
+        Route::post('/fee-package/store', [FeePackageController::class, 'store'])->name('fee.package.store');
+        Route::get('/fee-package/edit/{id}', [FeePackageController::class, 'edit'])->name('fee.package.edit');
+        Route::post('/fee-package/update/{id}', [FeePackageController::class, 'update'])->name('fee.package.update');
+        
+        // Fee Plan
+        Route::get('/fee-plan', [FeePlanController::class, 'index'])->name('fee.plan');
+        Route::post('/fee-plan/store', [FeePlanController::class, 'store'])->name('fee.plan.store');
+        Route::get('/fee-plan/edit/{id}', [FeePlanController::class, 'edit'])->name('fee.plan.edit');
+        Route::post('/fee-plan/update/{id}', [FeePlanController::class, 'update'])->name('fee.plan.update');
+        
+        // Bank Master
+        Route::get('/bank', [BankController::class, 'index'])->name('bank.master');
+        Route::post('/bank/store', [BankController::class, 'store'])->name('bank.store');
+        Route::get('/bank/edit/{id}', [BankController::class, 'edit'])->name('bank.edit');
+        Route::post('/bank/update/{id}', [BankController::class, 'update'])->name('bank.update');
     });
 
     // Admin routes - Super Admin only

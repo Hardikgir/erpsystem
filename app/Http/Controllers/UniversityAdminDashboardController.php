@@ -16,8 +16,8 @@ class UniversityAdminDashboardController extends Controller
     {
         $user = Auth::user();
         
-        // Get university associated with this admin user
-        $university = University::where('admin_user_id', $user->id)->first();
+        // Get university associated with this admin user via university_id relationship
+        $university = $user->university;
         
         // Get accessible modules for this user
         $modules = $user->getAccessibleModules();
