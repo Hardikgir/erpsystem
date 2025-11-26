@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -53,6 +54,24 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Boot method to auto-assign Spatie role when role_id is set
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($user) {
+            // If user has role_id but doesn't have Spatie role assigned, sync it
+            if ($user->role_id && $user->role) {
+                $spatieRole = Role::find($user->role_id);
+                if ($spatieRole && !$user->hasRole($spatieRole)) {
+                    $user->assignRole($spatieRole);
+                }
+            }
+        });
     }
 
     public function university(): BelongsTo
@@ -105,6 +124,7 @@ class User extends Authenticatable
 
     /**
      * Get modules and submodules accessible to the user based on role permissions
+     * Now uses Spatie permissions with route-based permission names
      */
     public function getAccessibleModules()
     {
@@ -121,54 +141,35 @@ class User extends Authenticatable
         }
 
         // If user has no role, return empty collection
-        if (!$this->role_id) {
+        if (!$this->role_id || !$this->role) {
             return collect();
         }
 
-        $roleId = $this->role_id;
+        // Get all modules and submodules
+        $allModules = Module::with('subModules')->where('status', true)->get();
+        $allowedModules = collect();
 
-        // Get all permissions for this role where can_view is true
-        // Query directly without boolean casting issues
-        $permissions = RoleModulePermission::where('role_id', $roleId)
-            ->get()
-            ->filter(function($permission) {
-                // Filter in PHP to avoid boolean casting issues
-                return $permission->can_view === true || $permission->can_view === 1 || $permission->can_view === '1';
-            });
+        foreach ($allModules as $module) {
+            $allowedSubModules = collect();
 
-        if ($permissions->isEmpty()) {
-            return collect();
+            foreach ($module->subModules->where('status', true) as $subModule) {
+                // Use route name for permission check (route.view)
+                $routeName = $subModule->route;
+                $viewPermission = "{$routeName}.view";
+
+                // Check if user has view permission for this submodule using Spatie
+                if ($this->can($viewPermission)) {
+                    $allowedSubModules->push($subModule);
+                }
+            }
+
+            // Only include module if it has at least one allowed submodule
+            if ($allowedSubModules->isNotEmpty()) {
+                $module->setRelation('subModules', $allowedSubModules);
+                $allowedModules->push($module);
+            }
         }
 
-        // Get unique submodule IDs that have can_view permission
-        $allowedSubModuleIds = $permissions->pluck('sub_module_id')->unique()->filter()->values()->toArray();
-
-        if (empty($allowedSubModuleIds)) {
-            return collect();
-        }
-
-        // Get module IDs from the allowed submodules
-        $moduleIds = SubModule::whereIn('id', $allowedSubModuleIds)
-            ->where('status', true)
-            ->pluck('module_id')
-            ->unique()
-            ->filter()
-            ->values()
-            ->toArray();
-
-        if (empty($moduleIds)) {
-            return collect();
-        }
-
-        // Load modules with only the allowed submodules
-        $modules = Module::whereIn('id', $moduleIds)
-            ->where('status', true)
-            ->with(['subModules' => function($query) use ($allowedSubModuleIds) {
-                $query->whereIn('id', $allowedSubModuleIds)
-                      ->where('status', true);
-            }])
-            ->get();
-
-        return $modules;
+        return $allowedModules;
     }
 }

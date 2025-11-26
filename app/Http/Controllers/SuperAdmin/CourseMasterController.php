@@ -14,6 +14,16 @@ use Illuminate\Support\Facades\Validator;
 class CourseMasterController extends Controller
 {
     /**
+     * Constructor - Apply permission middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:course.master.view')->only('index');
+        $this->middleware('permission:course.master.create')->only('store');
+        $this->middleware('permission:course.master.edit')->only('edit', 'update');
+    }
+
+    /**
      * Display the course master page (all courses from all universities)
      */
     public function index(): View

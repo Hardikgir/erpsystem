@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Validator;
 class ProgramMasterController extends Controller
 {
     /**
+     * Constructor - Apply permission middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:program.master.view')->only('index');
+        $this->middleware('permission:program.master.create')->only('store');
+        $this->middleware('permission:program.master.edit')->only('edit', 'update');
+    }
+
+    /**
      * Display the program master page (all programs from all universities)
      */
     public function index(): View

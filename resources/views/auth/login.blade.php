@@ -2,7 +2,13 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    @if ($errors->has('_token'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <strong>Session Expired!</strong> Please refresh the page and try again.
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}" id="loginForm">
         @csrf
 
         <!-- Email/Username Address -->

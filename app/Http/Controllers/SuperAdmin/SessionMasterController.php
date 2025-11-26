@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Validator;
 class SessionMasterController extends Controller
 {
     /**
+     * Constructor - Apply permission middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:session.master.view')->only('index');
+        $this->middleware('permission:session.master.create')->only('store');
+        $this->middleware('permission:session.master.edit')->only('edit', 'update');
+    }
+
+    /**
      * Generate session label from type and year
      */
     private function generateSessionLabel($sessionType, $year)
@@ -136,5 +146,6 @@ class SessionMasterController extends Controller
             ->with('success', 'Session updated successfully.');
     }
 }
+
 
 

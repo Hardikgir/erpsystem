@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Validator;
 class CollegeMasterController extends Controller
 {
     /**
+     * Constructor - Apply permission middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:college.master.view')->only('index');
+        $this->middleware('permission:college.master.create')->only('store');
+        $this->middleware('permission:college.master.edit')->only('edit', 'update');
+    }
+
+    /**
      * Display the college master page (all colleges from all universities)
      */
     public function index(): View
@@ -127,5 +137,6 @@ class CollegeMasterController extends Controller
             ->with('success', 'College updated successfully.');
     }
 }
+
 
 

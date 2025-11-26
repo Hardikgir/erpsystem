@@ -15,8 +15,8 @@
     
     @php
         $user = auth()->user();
-        $roleColor = $user->role->role_color ?? '#1F8BFF';
-        $roleHoverColor = $user->role->role_hover_color ?? '#1A7AE6';
+        $roleColor = $user && $user->role ? ($user->role->role_color ?? '#1F8BFF') : '#1F8BFF';
+        $roleHoverColor = $user && $user->role ? ($user->role->role_hover_color ?? '#1A7AE6') : '#1A7AE6';
     @endphp
     
     <style>

@@ -48,58 +48,58 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // University Admin Master Pages
     Route::middleware('isUniversityAdmin')->prefix('university-admin')->name('university.admin.')->group(function () {
         // Program Master
-        Route::get('/program-master', [ProgramMasterController::class, 'index'])->name('program.master');
-        Route::post('/program-master/store', [ProgramMasterController::class, 'store'])->name('program.store');
-        Route::get('/program-master/edit/{id}', [ProgramMasterController::class, 'edit'])->name('program.edit');
-        Route::post('/program-master/update/{id}', [ProgramMasterController::class, 'update'])->name('program.update');
+        Route::get('/program-master', [ProgramMasterController::class, 'index'])->middleware('permission:university.admin.program.master.view')->name('program.master');
+        Route::post('/program-master/store', [ProgramMasterController::class, 'store'])->middleware('permission:university.admin.program.master.create')->name('program.store');
+        Route::get('/program-master/edit/{id}', [ProgramMasterController::class, 'edit'])->middleware('permission:university.admin.program.master.edit')->name('program.edit');
+        Route::post('/program-master/update/{id}', [ProgramMasterController::class, 'update'])->middleware('permission:university.admin.program.master.edit')->name('program.update');
         
         // Course Master
-        Route::get('/course-master', [CourseMasterController::class, 'index'])->name('course.master');
-        Route::post('/course-master/store', [CourseMasterController::class, 'store'])->name('course.store');
-        Route::get('/course-master/edit/{id}', [CourseMasterController::class, 'edit'])->name('course.edit');
-        Route::post('/course-master/update/{id}', [CourseMasterController::class, 'update'])->name('course.update');
+        Route::get('/course-master', [CourseMasterController::class, 'index'])->middleware('permission:university.admin.course.master.view')->name('course.master');
+        Route::post('/course-master/store', [CourseMasterController::class, 'store'])->middleware('permission:university.admin.course.master.create')->name('course.store');
+        Route::get('/course-master/edit/{id}', [CourseMasterController::class, 'edit'])->middleware('permission:university.admin.course.master.edit')->name('course.edit');
+        Route::post('/course-master/update/{id}', [CourseMasterController::class, 'update'])->middleware('permission:university.admin.course.master.edit')->name('course.update');
         
         // College Master
-        Route::get('/college-master', [CollegeMasterController::class, 'index'])->name('college.master');
-        Route::post('/college-master/store', [CollegeMasterController::class, 'store'])->name('college.store');
-        Route::get('/college-master/edit/{id}', [CollegeMasterController::class, 'edit'])->name('college.edit');
-        Route::post('/college-master/update/{id}', [CollegeMasterController::class, 'update'])->name('college.update');
+        Route::get('/college-master', [CollegeMasterController::class, 'index'])->middleware('permission:university.admin.college.master.view')->name('college.master');
+        Route::post('/college-master/store', [CollegeMasterController::class, 'store'])->middleware('permission:university.admin.college.master.create')->name('college.store');
+        Route::get('/college-master/edit/{id}', [CollegeMasterController::class, 'edit'])->middleware('permission:university.admin.college.master.edit')->name('college.edit');
+        Route::post('/college-master/update/{id}', [CollegeMasterController::class, 'update'])->middleware('permission:university.admin.college.master.edit')->name('college.update');
         
         // Role Master
-        Route::get('/role-master', [UniversityRoleMasterController::class, 'index'])->name('role.master');
-        Route::post('/role-master/store', [UniversityRoleMasterController::class, 'store'])->name('role.store');
-        Route::get('/role-master/edit/{id}', [UniversityRoleMasterController::class, 'edit'])->name('role.edit');
-        Route::post('/role-master/update/{id}', [UniversityRoleMasterController::class, 'update'])->name('role.update');
+        Route::get('/role-master', [UniversityRoleMasterController::class, 'index'])->middleware('permission:university.admin.role.master.view')->name('role.master');
+        Route::post('/role-master/store', [UniversityRoleMasterController::class, 'store'])->middleware('permission:university.admin.role.master.create')->name('role.store');
+        Route::get('/role-master/edit/{id}', [UniversityRoleMasterController::class, 'edit'])->middleware('permission:university.admin.role.master.edit')->name('role.edit');
+        Route::post('/role-master/update/{id}', [UniversityRoleMasterController::class, 'update'])->middleware('permission:university.admin.role.master.edit')->name('role.update');
         
         // Session Master
-        Route::get('/session-master', [SessionMasterController::class, 'index'])->name('session.master');
-        Route::post('/session-master/store', [SessionMasterController::class, 'store'])->name('session.store');
-        Route::get('/session-master/edit/{id}', [SessionMasterController::class, 'edit'])->name('session.edit');
-        Route::post('/session-master/update/{id}', [SessionMasterController::class, 'update'])->name('session.update');
+        Route::get('/session-master', [SessionMasterController::class, 'index'])->middleware('permission:university.admin.session.master.view')->name('session.master');
+        Route::post('/session-master/store', [SessionMasterController::class, 'store'])->middleware('permission:university.admin.session.master.create')->name('session.store');
+        Route::get('/session-master/edit/{id}', [SessionMasterController::class, 'edit'])->middleware('permission:university.admin.session.master.edit')->name('session.edit');
+        Route::post('/session-master/update/{id}', [SessionMasterController::class, 'update'])->middleware('permission:university.admin.session.master.edit')->name('session.update');
         
         // Fee Element
-        Route::get('/fee-element', [FeeElementController::class, 'index'])->name('fee.element');
-        Route::post('/fee-element/store', [FeeElementController::class, 'store'])->name('fee.element.store');
-        Route::get('/fee-element/edit/{id}', [FeeElementController::class, 'edit'])->name('fee.element.edit');
-        Route::post('/fee-element/update/{id}', [FeeElementController::class, 'update'])->name('fee.element.update');
+        Route::get('/fee-element', [FeeElementController::class, 'index'])->middleware('permission:university.admin.fee.element.view')->name('fee.element');
+        Route::post('/fee-element/store', [FeeElementController::class, 'store'])->middleware('permission:university.admin.fee.element.create')->name('fee.element.store');
+        Route::get('/fee-element/edit/{id}', [FeeElementController::class, 'edit'])->middleware('permission:university.admin.fee.element.edit')->name('fee.element.edit');
+        Route::post('/fee-element/update/{id}', [FeeElementController::class, 'update'])->middleware('permission:university.admin.fee.element.edit')->name('fee.element.update');
         
         // Fee Package
-        Route::get('/fee-package', [FeePackageController::class, 'index'])->name('fee.package');
-        Route::post('/fee-package/store', [FeePackageController::class, 'store'])->name('fee.package.store');
-        Route::get('/fee-package/edit/{id}', [FeePackageController::class, 'edit'])->name('fee.package.edit');
-        Route::post('/fee-package/update/{id}', [FeePackageController::class, 'update'])->name('fee.package.update');
+        Route::get('/fee-package', [FeePackageController::class, 'index'])->middleware('permission:university.admin.fee.package.view')->name('fee.package');
+        Route::post('/fee-package/store', [FeePackageController::class, 'store'])->middleware('permission:university.admin.fee.package.create')->name('fee.package.store');
+        Route::get('/fee-package/edit/{id}', [FeePackageController::class, 'edit'])->middleware('permission:university.admin.fee.package.edit')->name('fee.package.edit');
+        Route::post('/fee-package/update/{id}', [FeePackageController::class, 'update'])->middleware('permission:university.admin.fee.package.edit')->name('fee.package.update');
         
         // Fee Plan
-        Route::get('/fee-plan', [FeePlanController::class, 'index'])->name('fee.plan');
-        Route::post('/fee-plan/store', [FeePlanController::class, 'store'])->name('fee.plan.store');
-        Route::get('/fee-plan/edit/{id}', [FeePlanController::class, 'edit'])->name('fee.plan.edit');
-        Route::post('/fee-plan/update/{id}', [FeePlanController::class, 'update'])->name('fee.plan.update');
+        Route::get('/fee-plan', [FeePlanController::class, 'index'])->middleware('permission:university.admin.fee.plan.view')->name('fee.plan');
+        Route::post('/fee-plan/store', [FeePlanController::class, 'store'])->middleware('permission:university.admin.fee.plan.create')->name('fee.plan.store');
+        Route::get('/fee-plan/edit/{id}', [FeePlanController::class, 'edit'])->middleware('permission:university.admin.fee.plan.edit')->name('fee.plan.edit');
+        Route::post('/fee-plan/update/{id}', [FeePlanController::class, 'update'])->middleware('permission:university.admin.fee.plan.edit')->name('fee.plan.update');
         
         // Bank Master
-        Route::get('/bank', [BankController::class, 'index'])->name('bank.master');
-        Route::post('/bank/store', [BankController::class, 'store'])->name('bank.store');
-        Route::get('/bank/edit/{id}', [BankController::class, 'edit'])->name('bank.edit');
-        Route::post('/bank/update/{id}', [BankController::class, 'update'])->name('bank.update');
+        Route::get('/bank', [BankController::class, 'index'])->middleware('permission:university.admin.bank.master.view')->name('bank.master');
+        Route::post('/bank/store', [BankController::class, 'store'])->middleware('permission:university.admin.bank.master.create')->name('bank.store');
+        Route::get('/bank/edit/{id}', [BankController::class, 'edit'])->middleware('permission:university.admin.bank.master.edit')->name('bank.edit');
+        Route::post('/bank/update/{id}', [BankController::class, 'update'])->middleware('permission:university.admin.bank.master.edit')->name('bank.update');
     });
 
     // Admin routes - Super Admin only
@@ -130,6 +130,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::put('role-colors/{role}', [RoleColorController::class, 'update'])->name('role-colors.update');
     });
 
+    // Super Admin Permission Management (Spatie-based)
+    Route::middleware('isSuperAdmin')->prefix('superadmin')->name('superadmin.')->group(function () {
+        Route::get('permissions/manage', [\App\Http\Controllers\SuperAdmin\PermissionManagementController::class, 'manage'])->name('permissions.manage');
+        Route::get('permissions/{role}/get', [\App\Http\Controllers\SuperAdmin\PermissionManagementController::class, 'getRolePermissions'])->name('permissions.get');
+        Route::put('permissions/{role}/update', [\App\Http\Controllers\SuperAdmin\PermissionManagementController::class, 'update'])->name('permissions.update');
+        Route::post('permissions/sync', function() {
+            \Artisan::call('permissions:sync-modules');
+            return redirect()->route('superadmin.permissions.manage')->with('success', 'Permissions synced successfully!');
+        })->name('permissions.sync');
+    });
+
     // Module Master - Super Admin only
     Route::middleware('isSuperAdmin')->group(function () {
         Route::get('/module-master', [ModuleMasterController::class, 'index'])->name('module.master');
@@ -154,10 +165,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/superadmin/program-master/update/{id}', [SuperAdminProgramMasterController::class, 'update'])->name('superadmin.program.update');
         
         // Course Master
-        Route::get('/superadmin/course-master', [SuperAdminCourseMasterController::class, 'index'])->name('superadmin.course.master');
-        Route::post('/superadmin/course-master/store', [SuperAdminCourseMasterController::class, 'store'])->name('superadmin.course.store');
-        Route::get('/superadmin/course-master/edit/{id}', [SuperAdminCourseMasterController::class, 'edit'])->name('superadmin.course.edit');
-        Route::post('/superadmin/course-master/update/{id}', [SuperAdminCourseMasterController::class, 'update'])->name('superadmin.course.update');
+        Route::get('/superadmin/course-master', [SuperAdminCourseMasterController::class, 'index'])->middleware('permission:course.master.view')->name('superadmin.course.master');
+        Route::post('/superadmin/course-master/store', [SuperAdminCourseMasterController::class, 'store'])->middleware('permission:course.master.create')->name('superadmin.course.store');
+        Route::get('/superadmin/course-master/edit/{id}', [SuperAdminCourseMasterController::class, 'edit'])->middleware('permission:course.master.edit')->name('superadmin.course.edit');
+        Route::post('/superadmin/course-master/update/{id}', [SuperAdminCourseMasterController::class, 'update'])->middleware('permission:course.master.edit')->name('superadmin.course.update');
         
         // College Master
         Route::get('/superadmin/college-master', [SuperAdminCollegeMasterController::class, 'index'])->name('superadmin.college.master');

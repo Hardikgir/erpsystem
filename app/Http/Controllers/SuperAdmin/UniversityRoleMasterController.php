@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\Validator;
 class UniversityRoleMasterController extends Controller
 {
     /**
+     * Constructor - Apply permission middleware
+     */
+    public function __construct()
+    {
+        $this->middleware('permission:university_role.master.view')->only('index');
+        $this->middleware('permission:university_role.master.create')->only('store');
+        $this->middleware('permission:university_role.master.edit')->only('edit', 'update');
+    }
+
+    /**
      * Display the university role master page (all roles from all universities)
      */
     public function index(): View
@@ -119,5 +129,6 @@ class UniversityRoleMasterController extends Controller
             ->with('success', 'University Role updated successfully.');
     }
 }
+
 
 
