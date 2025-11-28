@@ -151,3 +151,6 @@ class RegisterMasterModulesForSpatieSeeder extends Seeder
     }
 }
 
+
+
+

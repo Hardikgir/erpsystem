@@ -184,3 +184,6 @@ WHERE r.id = 3; -- Replace with your role ID
 
 **Status**: ✅ FIXED - Permissions now save correctly and are immediately available!
 
+
+
+

@@ -151,3 +151,6 @@ Super Admin can now assign these modules to any role with granular permissions (
 
 **Status**: ✅ **COMPLETE** - All master modules registered and ready for permission assignment!
 
+
+
+

@@ -15,10 +15,13 @@ use App\Http\Controllers\CourseMasterController;
 use App\Http\Controllers\CollegeMasterController;
 use App\Http\Controllers\UniversityRoleMasterController;
 use App\Http\Controllers\SessionMasterController;
+use App\Http\Controllers\SeatMatrixController;
 use App\Http\Controllers\FeeElementController;
 use App\Http\Controllers\FeePackageController;
 use App\Http\Controllers\FeePlanController;
 use App\Http\Controllers\BankController;
+use App\Http\Controllers\EligibilityCriteriaController;
+use App\Http\Controllers\CourseDocumentController;
 use App\Http\Controllers\SuperAdmin\ProgramMasterController as SuperAdminProgramMasterController;
 use App\Http\Controllers\SuperAdmin\CourseMasterController as SuperAdminCourseMasterController;
 use App\Http\Controllers\SuperAdmin\CollegeMasterController as SuperAdminCollegeMasterController;
@@ -100,6 +103,66 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/bank/store', [BankController::class, 'store'])->middleware('permission:university.admin.bank.master.create')->name('bank.store');
         Route::get('/bank/edit/{id}', [BankController::class, 'edit'])->middleware('permission:university.admin.bank.master.edit')->name('bank.edit');
         Route::post('/bank/update/{id}', [BankController::class, 'update'])->middleware('permission:university.admin.bank.master.edit')->name('bank.update');
+        
+        // Seat Matrix
+        Route::get('/seat-matrix', [SeatMatrixController::class, 'index'])->middleware('permission:university.admin.seat.matrix.view')->name('seat.matrix');
+        Route::post('/seat-matrix/store', [SeatMatrixController::class, 'store'])->middleware('permission:university.admin.seat.matrix.create')->name('seat.matrix.store');
+        Route::get('/seat-matrix/summary/{id}', [SeatMatrixController::class, 'summary'])->middleware('permission:university.admin.seat.matrix.view')->name('seat.matrix.summary');
+        
+        // AJAX route for fetching courses by program
+        Route::get('/get-courses/{programId}', function($programId) {
+            $universityId = auth()->user()->university_id;
+            $courses = \App\Models\Course::where('program_id', $programId)
+                ->where('university_id', $universityId)
+                ->orderBy('course_name')
+                ->get(['id', 'course_name']);
+            return response()->json($courses);
+        })->name('get.courses');
+        
+        // Eligibility Criteria
+        Route::get('/eligibility-criteria', [EligibilityCriteriaController::class, 'index'])
+            ->middleware('permission:university.admin.eligibility.criteria.view')
+            ->name('eligibility.criteria');
+        Route::post('/eligibility-criteria/store', [EligibilityCriteriaController::class, 'store'])
+            ->middleware('permission:university.admin.eligibility.criteria.create')
+            ->name('eligibility.criteria.store');
+        Route::get('/eligibility-criteria/view', [EligibilityCriteriaController::class, 'viewAll'])
+            ->middleware('permission:university.admin.eligibility.criteria.view')
+            ->name('eligibility.criteria.view');
+        Route::get('/eligibility-criteria/summary/{id}', [EligibilityCriteriaController::class, 'summary'])
+            ->middleware('permission:university.admin.eligibility.criteria.view')
+            ->name('eligibility.criteria.summary');
+        
+        // AJAX Routes for Eligibility Criteria
+        Route::get('/ajax/courses/{program_id}', [EligibilityCriteriaController::class, 'getCoursesByProgram'])
+            ->name('ajax.courses');
+        Route::get('/ajax/semesters/{course_id}', [EligibilityCriteriaController::class, 'getSemesterByCourse'])
+            ->name('ajax.semesters');
+        Route::get('/ajax/categories/{program_id}', [EligibilityCriteriaController::class, 'getCategoryByProgram'])
+            ->name('ajax.categories');
+        
+        // Course Document Mapping
+        Route::get('/course-document', [CourseDocumentController::class, 'index'])
+            ->middleware('permission:university.admin.course.document.view')
+            ->name('course.document');
+        Route::post('/course-document/store', [CourseDocumentController::class, 'store'])
+            ->middleware('permission:university.admin.course.document.create')
+            ->name('course.document.store');
+        Route::post('/course-document/search', [CourseDocumentController::class, 'search'])
+            ->middleware('permission:university.admin.course.document.view')
+            ->name('course.document.search');
+        Route::delete('/course-document/{id}', [CourseDocumentController::class, 'destroy'])
+            ->middleware('permission:university.admin.course.document.delete')
+            ->name('course.document.delete');
+        Route::post('/course-document/submit-mapping', [CourseDocumentController::class, 'submitMappedDocuments'])
+            ->middleware('permission:university.admin.course.document.map')
+            ->name('course.document.submit');
+        
+        // AJAX Routes for Course Document
+        Route::get('/ajax/courses/{program_id}', [CourseDocumentController::class, 'getCourses'])
+            ->name('ajax.courses.document');
+        Route::get('/ajax/sessions/{program_id}', [CourseDocumentController::class, 'getSessions'])
+            ->name('ajax.sessions.document');
     });
 
     // Admin routes - Super Admin only

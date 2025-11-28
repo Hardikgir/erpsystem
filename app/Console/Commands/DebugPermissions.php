@@ -72,3 +72,6 @@ class DebugPermissions extends Command
     }
 }
 
+
+
+

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class CourseMasterController extends Controller
@@ -58,6 +59,8 @@ class CourseMasterController extends Controller
             'course_duration' => 'required|integer|min:1|max:10',
             'program_id' => 'required|exists:programs,id',
             'session_id' => 'required|exists:university_sessions,id',
+        ], [
+            'course_type.in' => 'Course type must be either "Semester" or "Year".',
         ]);
 
         if ($validator->fails()) {
@@ -66,15 +69,56 @@ class CourseMasterController extends Controller
                 ->withInput();
         }
 
-        Course::create([
-            'university_id' => $universityId,
-            'program_id' => $request->program_id,
-            'session_id' => $request->session_id,
-            'course_code' => strtoupper($request->course_code),
-            'course_name' => $request->course_name,
-            'course_type' => $request->course_type,
-            'course_duration' => $request->course_duration,
-        ]);
+        // Ensure course_type is exactly one of the valid values
+        $courseType = trim($request->course_type);
+        if (!in_array($courseType, ['Semester', 'Year'])) {
+            return redirect()->back()
+                ->withErrors(['course_type' => 'Invalid course type. Must be "Semester" or "Year".'])
+                ->withInput();
+        }
+
+        try {
+            Course::create([
+                'university_id' => $universityId,
+                'program_id' => $request->program_id,
+                'session_id' => $request->session_id,
+                'course_code' => strtoupper(trim($request->course_code)),
+                'course_name' => trim($request->course_name),
+                'course_type' => $courseType,
+                'course_duration' => (int)$request->course_duration,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // If there's still a database error, try to fix the column and retry
+            if (strpos($e->getMessage(), 'course_type') !== false || strpos($e->getMessage(), 'Data truncated') !== false) {
+                try {
+                    // First update any invalid values
+                    DB::statement("UPDATE courses SET course_type = 'Semester' WHERE course_type NOT IN ('Semester', 'Year') OR course_type IS NULL");
+                    
+                    // Then fix the column - ensure exact match
+                    DB::statement("ALTER TABLE courses MODIFY COLUMN course_type ENUM('Semester', 'Year') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL");
+                    
+                    // Retry the creation
+                    Course::create([
+                        'university_id' => $universityId,
+                        'program_id' => $request->program_id,
+                        'session_id' => $request->session_id,
+                        'course_code' => strtoupper(trim($request->course_code)),
+                        'course_name' => trim($request->course_name),
+                        'course_type' => $courseType,
+                        'course_duration' => (int)$request->course_duration,
+                    ]);
+                } catch (\Exception $retryException) {
+                    \Log::error('Course creation error after fix attempt: ' . $retryException->getMessage());
+                    return redirect()->back()
+                        ->withErrors(['error' => 'Database error. Please run: php artisan fix:course-type-enum or contact administrator. Error: ' . $retryException->getMessage()])
+                        ->withInput();
+                }
+            } else {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Failed to create course: ' . $e->getMessage()])
+                    ->withInput();
+            }
+        }
 
         return redirect()->route('university.admin.course.master')
             ->with('success', 'Course created successfully.');
@@ -126,10 +170,10 @@ class CourseMasterController extends Controller
         $course->update([
             'program_id' => $request->program_id,
             'session_id' => $request->session_id,
-            'course_code' => strtoupper($request->course_code),
-            'course_name' => $request->course_name,
-            'course_type' => $request->course_type,
-            'course_duration' => $request->course_duration,
+            'course_code' => strtoupper(trim($request->course_code)),
+            'course_name' => trim($request->course_name),
+            'course_type' => trim($request->course_type), // Ensure trimmed value
+            'course_duration' => (int)$request->course_duration,
         ]);
 
         return redirect()->route('university.admin.course.master')
